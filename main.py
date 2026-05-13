@@ -1,16 +1,23 @@
-# This is a sample Python script.
+import pandas as pd
+from sdv.metadata import Metadata
+from sdv.single_table import GaussianCopulaSynthesizer
 
-# Press Mayús+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# 1. Ingestión: Cargamos los datos "reales" 
+real_data = pd.read_csv('datos_reales.csv')
 
+# 2. Metadatos: El sistema detecta qué es cada columna [cite: 37, 40]
+metadata = Metadata.detect_from_dataframe(data=real_data)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# 3. Entrenamiento: El modelo aprende las estadísticas y correlaciones [cite: 42]
+# Usamos GaussianCopula porque es ideal para el MVP 
+synthesizer = GaussianCopulaSynthesizer(metadata)
+synthesizer.fit(real_data)
 
+# 4. Generación: Creamos 100 nuevos registros sintéticos [cite: 44]
+synthetic_data = synthesizer.sample(num_rows=100)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+# 5. Guardado
+synthetic_data.to_csv('datos_sinteticos.csv', index=False)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+print("¡Éxito! Se han generado 100 registros sintéticos en 'datos_sinteticos.csv'.")
+print(synthetic_data.head()) # Muestra las primeras filas para verificar
